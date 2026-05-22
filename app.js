@@ -234,8 +234,8 @@ function renderZonePopup(id) {
   const popup = document.createElement("form");
   popup.className = "zone-popup";
   popup.innerHTML = `
-    <input name="label" value="${escapeHtml(layer.label)}" aria-label="Zone label" />
-    <select name="role" aria-label="Zone role">
+    <input type="text" name="zone-label" value="${escapeHtml(layer.label)}" aria-label="Zone label" autocomplete="off" autocorrect="off" spellcheck="false" />
+    <select name="zone-role" aria-label="Zone role">
       ${Object.entries(ROLE_RULES).map(([role, rule]) => `<option value="${role}" ${role === layer.role ? "selected" : ""}>${rule.label}</option>`).join("")}
     </select>
     <div class="popup-actions">
@@ -246,13 +246,15 @@ function renderZonePopup(id) {
   `;
   popup.style.left = `${clamp(layer.x, 2, 64)}%`;
   popup.style.top = `${clamp(layer.y + layer.h + 1, 2, 78)}%`;
+  popup.addEventListener("submit", (event) => event.preventDefault());
   popup.addEventListener("pointerdown", (event) => event.stopPropagation());
-  const labelInput = popup.querySelector('[name="label"]');
-  const roleSelect = popup.querySelector('[name="role"]');
+  const labelInput = popup.querySelector('[name="zone-label"]');
+  const roleSelect = popup.querySelector('[name="zone-role"]');
   labelInput.addEventListener("input", () => {
     layer.label = labelInput.value || "Untitled zone";
-    render();
-    renderZonePopup(layer.id);
+    const selectedHotspot = els.overlayRoot.querySelector(".hotspot.selected");
+    const label = selectedHotspot?.querySelector(".label-trigger");
+    if (label) label.textContent = ROLE_RULES[layer.role].label;
   });
   roleSelect.addEventListener("change", () => {
     layer.role = roleSelect.value;
@@ -516,7 +518,7 @@ function escapeHtml(value) {
 }
 
 function exportHtml() {
-  const doc = `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Interactive Infographic</title><style>body{margin:0;background:#0f1111;font-family:Inter,Arial,sans-serif;color:#142121}.app{width:min(100%,430px);margin:0 auto;padding:12px}.frame{position:relative;aspect-ratio:9/16;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 18px 48px rgba(0,0,0,.28)}img{width:100%;height:100%;object-fit:contain}.spot{position:absolute;border:2px solid currentColor;border-radius:8px;background:color-mix(in srgb,currentColor 14%,transparent)}.spot.dim{opacity:.12}.card{margin-top:10px;background:#fff;border-radius:8px;padding:12px;font-size:13px;line-height:1.4}</style></head><body><main class="app"><section id="frame" class="frame"><img src="${state.imageSrc}" alt="Interactive infographic"></section><article id="card" class="card">Tap a highlighted area.</article></main><script>const layers=${JSON.stringify(state.layers.filter((layer) => !layer.hidden))};const rules=${JSON.stringify(ROLE_RULES)};let active='${state.activeGroup}';const frame=document.getElementById('frame'),card=document.getElementById('card');function render(){frame.querySelectorAll('button').forEach(n=>n.remove());layers.forEach(l=>{const b=document.createElement('button');b.className='spot '+(l.group===active?'':'dim');b.style.cssText='left:'+l.x+'%;top:'+l.y+'%;width:'+l.w+'%;height:'+l.h+'%;color:'+rules[l.role].color;b.onclick=()=>{active=l.group;card.innerHTML='<strong>'+l.label+'</strong><br>'+(l.prompt||rules[l.role].rule);render()};frame.append(b)})}render()<\/script></body></html>`;
+  const doc = `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Interactive Infographic</title><style>:root{font-family:"Trebuchet MS",Arial,sans-serif;color:#37281f}body{margin:0;background:linear-gradient(135deg,#ffd17d,#ffdf9d)}.app{width:min(100%,430px);margin:0 auto;min-height:100vh;padding:12px;background:linear-gradient(rgba(94,131,118,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(94,131,118,.08) 1px,transparent 1px),linear-gradient(#fff2bf,#ffd890);background-size:22px 22px,22px 22px,auto}.frame{position:relative;aspect-ratio:9/16;background:#fff;border:3px solid #4b3526;border-radius:22px;overflow:hidden;box-shadow:0 16px 0 rgba(69,45,25,.16),0 25px 42px rgba(106,66,31,.2)}img{width:100%;height:100%;object-fit:contain;display:block}.spot{position:absolute;border:2px dashed currentColor;border-radius:14px;background:color-mix(in srgb,currentColor 10%,transparent);padding:0;transition:opacity .18s ease,transform .18s ease,box-shadow .18s ease;animation:pulse 2.4s ease-in-out infinite}.spot.dim{opacity:.13;animation:none}.spot.active{background:color-mix(in srgb,currentColor 22%,transparent);box-shadow:0 0 0 5px color-mix(in srgb,currentColor 26%,transparent);transform:translateY(-1px);opacity:1}.spot span{position:absolute;left:7px;top:7px;max-width:calc(100% - 14px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:rgba(255,253,240,.96);border-radius:999px;padding:4px 8px;color:currentColor;font-size:10px;font-weight:900;text-transform:uppercase}.card{margin-top:12px;background:#fffdf0;border:2px solid #4b3526;border-radius:18px;padding:12px 14px;box-shadow:0 6px 0 rgba(75,53,38,.18);font-size:13px;line-height:1.4}.card strong{display:block;font-size:15px;margin-bottom:4px}.hint{font-size:12px;color:#8a6b4d;margin-top:6px}@keyframes pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,currentColor 28%,transparent)}50%{box-shadow:0 0 0 6px color-mix(in srgb,currentColor 4%,transparent)}}<\/style></head><body><main class="app"><section id="frame" class="frame"><img src="${state.imageSrc}" alt="Interactive infographic"></section><article id="card" class="card"><strong>Tap a highlighted area</strong><div>Each zone reveals its planned interaction.</div><div class="hint">This is the exported interactive version.</div></article></main><script>const layers=${JSON.stringify(state.layers.filter((layer) => !layer.hidden))};const rules=${JSON.stringify(ROLE_RULES)};let active='${state.activeGroup}';const frame=document.getElementById('frame'),card=document.getElementById('card');function render(){frame.querySelectorAll('button').forEach(n=>n.remove());layers.forEach(l=>{const b=document.createElement('button');b.type='button';b.className='spot '+(l.group===active?'active':'dim');b.style.cssText='left:'+l.x+'%;top:'+l.y+'%;width:'+l.w+'%;height:'+l.h+'%;color:'+rules[l.role].color;const s=document.createElement('span');s.textContent=rules[l.role].label;b.append(s);b.onclick=()=>{active=l.group;card.innerHTML='<strong>'+l.label+'</strong><div>'+(l.prompt||rules[l.role].rule)+'</div><div class="hint">'+rules[l.role].interaction+'</div>';render()};frame.append(b)})}render()<\/script></body></html>`;
   const blob = new Blob([doc], { type: "text/html" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
