@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Infogram Mobile Studio</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="phone-app">
+      <header class="app-header">
+        <div class="brand-lockup">
+          <img class="brand-icon" src="infogram-logo.png" alt="" />
+          <img class="brand-wordmark" src="infogram-wordmark-clean.png" alt="Infogram" />
+        </div>
+        <p class="brand-intro">Turn static infographics into tap-ready mobile stories.</p>
+        <img class="header-mascot" src="infogram-kitties.png" alt="" />
+      </header>
+
+      <section class="upload-strip">
+        <label class="upload-button">
+          <input id="imageInput" type="file" accept="image/*" />
+          <span>U</span>pload
+        </label>
+        <button id="detectBtn" type="button"><span>A</span>nalyze</button>
+        <button id="previewBtn" type="button"><span>P</span>review</button>
+        <button id="exportBtn" type="button"><span>E</span>xport</button>
+      </section>
+
+      <section class="display-board" aria-label="Mobile infographic preview">
+        <div class="display-label">
+          <span id="activeTitle">Ready</span>
+          <span>9:16</span>
+        </div>
+        <div id="canvas" class="canvas">
+          <img id="sourceImage" src="USDT.png" alt="Uploaded infographic" />
+          <div id="overlayRoot" class="overlay-root"></div>
+          <article id="detailCard" class="detail-card" hidden></article>
+        </div>
+      </section>
+
+      <details class="advanced-panel">
+        <summary>Advanced</summary>
+        <label>
+          Overall direction
+          <textarea id="globalPrompt" rows="3" placeholder="Example: make this feel like a guided product story with playful tap reveals."></textarea>
+        </label>
+        <label>
+          Selected zone instruction
+          <textarea id="zonePrompt" rows="3" placeholder="Example: make this chart reveal one comparison at a time."></textarea>
+        </label>
+        <label>
+          Interaction group
+          <input id="groupField" type="text" />
+        </label>
+        <div class="advanced-actions">
+          <button id="addZoneBtn" type="button">Add zone</button>
+          <button id="resetZonesBtn" type="button">Reset zones</button>
+        </div>
+      </details>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
