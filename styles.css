@@ -465,6 +465,157 @@ input[type="file"] {
   line-height: 1.3;
 }
 
+.interaction-effect {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+  border-radius: 16px;
+}
+
+.interaction-effect span {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  max-width: calc(100% - 16px);
+  border-radius: 999px;
+  padding: 5px 9px;
+  background: #fffdf0;
+  color: currentColor;
+  border: 2px solid currentColor;
+  box-shadow: 0 4px 0 color-mix(in srgb, currentColor 20%, transparent);
+  font-size: 10px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.title-effect {
+  box-shadow: inset 0 0 0 999px rgba(255, 253, 240, 0.18), 0 0 0 6px color-mix(in srgb, currentColor 24%, transparent);
+  animation: titlePop 700ms ease both;
+}
+
+.statistic-effect b {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  min-width: 54px;
+  border-radius: 999px;
+  padding: 7px 10px;
+  background: currentColor;
+  color: #fffdf0;
+  font-size: 20px;
+  line-height: 1;
+  animation: countPop 800ms ease both;
+}
+
+.content-effect {
+  background: linear-gradient(90deg, color-mix(in srgb, currentColor 18%, transparent), transparent 62%);
+  animation: revealWash 900ms ease both;
+}
+
+.content-effect i {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  height: 7px;
+  border-radius: 999px;
+  background: currentColor;
+  transform-origin: left;
+  animation: traceGrow 900ms ease both;
+}
+
+.chart-effect {
+  overflow: hidden;
+}
+
+.chart-effect::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, currentColor 28%, transparent), transparent);
+  transform: translateX(-100%);
+  animation: scanAcross 1.15s ease both;
+}
+
+.chart-effect i {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 16%;
+  height: 34%;
+  border-left: 10px solid currentColor;
+  border-right: 10px solid currentColor;
+  background: linear-gradient(to top, currentColor 0 65%, transparent 65%);
+  opacity: 0.75;
+  animation: barRise 850ms ease both;
+}
+
+.character-effect span {
+  left: auto;
+  right: 8px;
+  top: -12px;
+  max-width: min(180px, 92%);
+  text-transform: none;
+  color: var(--ink);
+  animation: bubbleIn 650ms ease both;
+}
+
+.science-effect {
+  background:
+    linear-gradient(90deg, currentColor 50%, transparent 0) 0 50% / 18px 3px repeat-x;
+  animation: traceDash 950ms linear both;
+}
+
+.science-effect i {
+  position: absolute;
+  right: 8px;
+  top: calc(50% - 8px);
+  width: 16px;
+  height: 16px;
+  border-top: 4px solid currentColor;
+  border-right: 4px solid currentColor;
+  transform: rotate(45deg);
+}
+
+@keyframes titlePop {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes countPop {
+  from { opacity: 0; transform: translateY(12px) scale(0.7); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes revealWash {
+  from { opacity: 0; clip-path: inset(0 100% 0 0); }
+  to { opacity: 1; clip-path: inset(0); }
+}
+
+@keyframes traceGrow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes scanAcross {
+  to { transform: translateX(100%); }
+}
+
+@keyframes barRise {
+  from { opacity: 0; transform: scaleY(0); transform-origin: bottom; }
+  to { opacity: 0.75; transform: scaleY(1); transform-origin: bottom; }
+}
+
+@keyframes bubbleIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.92); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes traceDash {
+  from { background-position-x: 0; opacity: 0; }
+  to { background-position-x: 36px; opacity: 1; }
+}
+
 .field-grid {
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;

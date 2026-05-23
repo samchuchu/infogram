@@ -223,6 +223,34 @@ function renderHotspots() {
     }
     els.overlayRoot.append(hotspot);
   });
+  if (state.preview) {
+    const activeLayer = getActiveLayer();
+    if (activeLayer) appendInteractionEffect(activeLayer, els.overlayRoot);
+  }
+}
+
+function appendInteractionEffect(layer, root) {
+  const rule = ROLE_RULES[layer.role];
+  const effect = document.createElement("div");
+  effect.className = `interaction-effect ${layer.role}-effect`;
+  effect.style.left = `${layer.x}%`;
+  effect.style.top = `${layer.y}%`;
+  effect.style.width = `${layer.w}%`;
+  effect.style.height = `${layer.h}%`;
+  effect.style.color = rule.color;
+
+  const label = escapeHtml(layer.label);
+  const prompt = escapeHtml(layer.prompt || rule.interaction);
+  const content = {
+    title: `<span>${label}</span>`,
+    statistic: `<span>${label}</span><b>+24%</b>`,
+    content: `<span>${label}</span><i></i>`,
+    chart: `<span>${label}</span><i></i>`,
+    character: `<span>${prompt}</span>`,
+    science: `<span>${label}</span><i></i>`
+  };
+  effect.innerHTML = content[layer.role] || `<span>${label}</span>`;
+  root.append(effect);
 }
 
 function renderZonePopup(id) {
@@ -417,9 +445,7 @@ function activateLayer(id) {
   if (!layer) return;
   state.activeLayerId = id;
   state.activeGroup = layer.group;
-  const rule = ROLE_RULES[layer.role];
-  els.detailCard.hidden = !state.preview;
-  els.detailCard.innerHTML = `<h3>${layer.label}</h3><p>${layer.prompt || rule.interaction}</p>`;
+  els.detailCard.hidden = true;
   render();
 }
 
@@ -518,7 +544,45 @@ function escapeHtml(value) {
 }
 
 function exportHtml() {
-  const doc = `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Interactive Infographic</title><style>:root{font-family:"Trebuchet MS",Arial,sans-serif;color:#37281f}body{margin:0;background:linear-gradient(135deg,#ffd17d,#ffdf9d)}.app{width:min(100%,430px);margin:0 auto;min-height:100vh;padding:12px;background:linear-gradient(rgba(94,131,118,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(94,131,118,.08) 1px,transparent 1px),linear-gradient(#fff2bf,#ffd890);background-size:22px 22px,22px 22px,auto}.frame{position:relative;aspect-ratio:9/16;background:#fff;border:3px solid #4b3526;border-radius:22px;overflow:hidden;box-shadow:0 16px 0 rgba(69,45,25,.16),0 25px 42px rgba(106,66,31,.2)}img{width:100%;height:100%;object-fit:contain;display:block}.spot{position:absolute;border:2px dashed currentColor;border-radius:14px;background:color-mix(in srgb,currentColor 10%,transparent);padding:0;transition:opacity .18s ease,transform .18s ease,box-shadow .18s ease;animation:pulse 2.4s ease-in-out infinite}.spot.dim{opacity:.13;animation:none}.spot.active{background:color-mix(in srgb,currentColor 22%,transparent);box-shadow:0 0 0 5px color-mix(in srgb,currentColor 26%,transparent);transform:translateY(-1px);opacity:1}.spot span{position:absolute;left:7px;top:7px;max-width:calc(100% - 14px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:rgba(255,253,240,.96);border-radius:999px;padding:4px 8px;color:currentColor;font-size:10px;font-weight:900;text-transform:uppercase}.card{margin-top:12px;background:#fffdf0;border:2px solid #4b3526;border-radius:18px;padding:12px 14px;box-shadow:0 6px 0 rgba(75,53,38,.18);font-size:13px;line-height:1.4}.card strong{display:block;font-size:15px;margin-bottom:4px}.hint{font-size:12px;color:#8a6b4d;margin-top:6px}@keyframes pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,currentColor 28%,transparent)}50%{box-shadow:0 0 0 6px color-mix(in srgb,currentColor 4%,transparent)}}<\/style></head><body><main class="app"><section id="frame" class="frame"><img src="${state.imageSrc}" alt="Interactive infographic"></section><article id="card" class="card"><strong>Tap a highlighted area</strong><div>Each zone reveals its planned interaction.</div><div class="hint">This is the exported interactive version.</div></article></main><script>const layers=${JSON.stringify(state.layers.filter((layer) => !layer.hidden))};const rules=${JSON.stringify(ROLE_RULES)};let active='${state.activeGroup}';const frame=document.getElementById('frame'),card=document.getElementById('card');function render(){frame.querySelectorAll('button').forEach(n=>n.remove());layers.forEach(l=>{const b=document.createElement('button');b.type='button';b.className='spot '+(l.group===active?'active':'dim');b.style.cssText='left:'+l.x+'%;top:'+l.y+'%;width:'+l.w+'%;height:'+l.h+'%;color:'+rules[l.role].color;const s=document.createElement('span');s.textContent=rules[l.role].label;b.append(s);b.onclick=()=>{active=l.group;card.innerHTML='<strong>'+l.label+'</strong><div>'+(l.prompt||rules[l.role].rule)+'</div><div class="hint">'+rules[l.role].interaction+'</div>';render()};frame.append(b)})}render()<\/script></body></html>`;
+  const doc = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Interactive Infographic</title>
+<style>
+:root{font-family:"Trebuchet MS",Arial,sans-serif;color:#37281f}
+body{margin:0;background:linear-gradient(135deg,#ffd17d,#ffdf9d)}
+.app{width:min(100%,430px);margin:0 auto;min-height:100vh;padding:12px;background:linear-gradient(rgba(94,131,118,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(94,131,118,.08) 1px,transparent 1px),linear-gradient(#fff2bf,#ffd890);background-size:22px 22px,22px 22px,auto}
+.frame{position:relative;aspect-ratio:9/16;background:#fff;border:3px solid #4b3526;border-radius:22px;overflow:hidden;box-shadow:0 16px 0 rgba(69,45,25,.16),0 25px 42px rgba(106,66,31,.2)}
+img{width:100%;height:100%;object-fit:contain;display:block}
+.spot{position:absolute;border:2px dashed currentColor;border-radius:14px;background:color-mix(in srgb,currentColor 10%,transparent);padding:0;transition:opacity .18s ease,transform .18s ease,box-shadow .18s ease;animation:pulse 2.4s ease-in-out infinite}
+.spot.dim{opacity:.13;animation:none}.spot.active{background:color-mix(in srgb,currentColor 22%,transparent);box-shadow:0 0 0 5px color-mix(in srgb,currentColor 26%,transparent);transform:translateY(-1px);opacity:1}
+.spot span,.effect span{position:absolute;left:7px;top:7px;max-width:calc(100% - 14px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:rgba(255,253,240,.96);border-radius:999px;padding:4px 8px;color:currentColor;font-size:10px;font-weight:900;text-transform:uppercase}
+.effect{position:absolute;z-index:4;pointer-events:none;border-radius:16px;color:inherit}
+.title-effect{box-shadow:inset 0 0 0 999px rgba(255,253,240,.18),0 0 0 6px color-mix(in srgb,currentColor 24%,transparent);animation:titlePop .7s ease both}
+.statistic-effect b{position:absolute;right:8px;bottom:8px;min-width:54px;border-radius:999px;padding:7px 10px;background:currentColor;color:#fffdf0;font-size:20px;line-height:1;animation:countPop .8s ease both}
+.content-effect{background:linear-gradient(90deg,color-mix(in srgb,currentColor 18%,transparent),transparent 62%);animation:revealWash .9s ease both}.content-effect i{position:absolute;left:10px;right:10px;bottom:10px;height:7px;border-radius:999px;background:currentColor;transform-origin:left;animation:traceGrow .9s ease both}
+.chart-effect{overflow:hidden}.chart-effect:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,color-mix(in srgb,currentColor 28%,transparent),transparent);transform:translateX(-100%);animation:scanAcross 1.15s ease both}.chart-effect i{position:absolute;left:10%;right:10%;bottom:16%;height:34%;border-left:10px solid currentColor;border-right:10px solid currentColor;background:linear-gradient(to top,currentColor 0 65%,transparent 65%);opacity:.75;animation:barRise .85s ease both}
+.character-effect span{left:auto;right:8px;top:-12px;max-width:min(180px,92%);text-transform:none;color:#37281f;animation:bubbleIn .65s ease both}.science-effect{background:linear-gradient(90deg,currentColor 50%,transparent 0) 0 50%/18px 3px repeat-x;animation:traceDash .95s linear both}.science-effect i{position:absolute;right:8px;top:calc(50% - 8px);width:16px;height:16px;border-top:4px solid currentColor;border-right:4px solid currentColor;transform:rotate(45deg)}
+.card{margin-top:12px;background:#fffdf0;border:2px solid #4b3526;border-radius:18px;padding:12px 14px;box-shadow:0 6px 0 rgba(75,53,38,.18);font-size:13px;line-height:1.4}.card strong{display:block;font-size:15px;margin-bottom:4px}.hint{font-size:12px;color:#8a6b4d;margin-top:6px}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,currentColor 28%,transparent)}50%{box-shadow:0 0 0 6px color-mix(in srgb,currentColor 4%,transparent)}}@keyframes titlePop{from{opacity:0;transform:scale(.98)}to{opacity:1;transform:scale(1)}}@keyframes countPop{from{opacity:0;transform:translateY(12px) scale(.7)}to{opacity:1;transform:translateY(0) scale(1)}}@keyframes revealWash{from{opacity:0;clip-path:inset(0 100% 0 0)}to{opacity:1;clip-path:inset(0)}}@keyframes traceGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}@keyframes scanAcross{to{transform:translateX(100%)}}@keyframes barRise{from{opacity:0;transform:scaleY(0);transform-origin:bottom}to{opacity:.75;transform:scaleY(1);transform-origin:bottom}}@keyframes bubbleIn{from{opacity:0;transform:translateY(8px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}@keyframes traceDash{from{background-position-x:0;opacity:0}to{background-position-x:36px;opacity:1}}
+</style>
+</head>
+<body>
+<main class="app"><section id="frame" class="frame"><img src="${state.imageSrc}" alt="Interactive infographic"></section><article id="card" class="card"><strong>Tap a highlighted area</strong><div>The infographic itself will react.</div><div class="hint">No note-only mode.</div></article></main>
+<script>
+const layers=${JSON.stringify(state.layers.filter((layer) => !layer.hidden))};
+const rules=${JSON.stringify(ROLE_RULES)};
+let activeId=layers[0]?.id||null;
+const frame=document.getElementById('frame'),card=document.getElementById('card');
+function esc(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function effectMarkup(l){const r=rules[l.role],label=esc(l.label),prompt=esc(l.prompt||r.interaction);return {title:'<span>'+label+'</span>',statistic:'<span>'+label+'</span><b>+24%</b>',content:'<span>'+label+'</span><i></i>',chart:'<span>'+label+'</span><i></i>',character:'<span>'+prompt+'</span>',science:'<span>'+label+'</span><i></i>'}[l.role]||'<span>'+label+'</span>'}
+function render(){frame.querySelectorAll('button,.effect').forEach(n=>n.remove());layers.forEach(l=>{const r=rules[l.role],b=document.createElement('button');b.type='button';b.className='spot '+(l.id===activeId?'active':'dim');b.style.cssText='left:'+l.x+'%;top:'+l.y+'%;width:'+l.w+'%;height:'+l.h+'%;color:'+r.color;const s=document.createElement('span');s.textContent=r.label;b.append(s);b.onclick=()=>{activeId=l.id;card.innerHTML='<strong>'+esc(l.label)+'</strong><div>'+esc(r.interaction)+'</div><div class="hint">'+esc(l.prompt||'Tap another zone to change the scene.')+'</div>';render()};frame.append(b)});const active=layers.find(l=>l.id===activeId);if(active){const r=rules[active.role],e=document.createElement('div');e.className='effect '+active.role+'-effect';e.style.cssText='left:'+active.x+'%;top:'+active.y+'%;width:'+active.w+'%;height:'+active.h+'%;color:'+r.color;e.innerHTML=effectMarkup(active);frame.append(e)}}
+render();
+<\/script>
+</body>
+</html>`;
   const blob = new Blob([doc], { type: "text/html" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
